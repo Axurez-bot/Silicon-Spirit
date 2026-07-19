@@ -1,0 +1,10 @@
+﻿# Local Environment/Model Weights
+models/
+static/
+spirit_memory/
+__pycache__/
+.env
+.DS_Store
+*.db
+*.log
+assets/

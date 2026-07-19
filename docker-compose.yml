@@ -1,0 +1,56 @@
+services:
+  # ---- BACKEND CORE ENGINE ----
+  spirit-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: silicon-spirit-backend
+    restart: unless-stopped
+    shm_size: '2gb'
+    ports:
+      - "8501:8501"  # FastAPI API traffic mapping
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=qwen3:14b
+      - OLLAMA_EVAL_MODEL=qwen3:8b
+      - CHROMA_TELEMETRY_IMPL=none
+      - LANGGRAPH_ALLOWED_OBJECTS=messages
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./spirit_memory:/app/spirit_memory
+      - ./static:/app/static
+      - ./models:/app/models
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility]
+
+  # ---- STREAMLIT FRONTEND & THREAT LAB ----
+  spirit-frontend:
+    image: python:3.10-slim
+    container_name: silicon-spirit-frontend
+    restart: unless-stopped
+    ports:
+      - "8502:8502"  # Exposed port for browser UI access
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SPIRIT_API=http://spirit-backend:8501  # Injects container routing context cleanly
+    volumes:
+      - .:/app
+      - ./spirit_memory:/app/spirit_memory
+      - ./static:/app/static
+    working_dir: /app
+    depends_on:
+      - spirit-backend
+    command: >
+      sh -c "pip install --no-cache-dir streamlit requests && 
+             streamlit run web_app.py --server.port=8502 --server.address=0.0.0.0"

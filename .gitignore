@@ -1,0 +1,37 @@
+# Environment
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyw
+
+# Models — too large
+models/
+voices/
+chroma_data/
+assets/
+
+# Avatar, audio, personal data
+static/
+spirit_memory/
+spirit_audio_cache/
+
+# Config with personal data
+spirit_config.json
+
+# Logs and temp
+*.log
+*.tmp
+*.tar.gz
+*.onnx
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
